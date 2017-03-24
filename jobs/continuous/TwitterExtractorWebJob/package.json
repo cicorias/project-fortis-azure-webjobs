@@ -1,0 +1,28 @@
+{
+  "name": "twitterextractor",
+  "version": "1.0.0",
+  "author": "Erik Schlegel <erisch@microsoft.com>",
+  "description": "Extracts tweets for Fortis platform",
+  "repository": "https://github.com/CatalystCode/Fortis.git",
+  "scripts": {
+    "test": "PORT=3035 mocha"
+  },
+  "engines": {
+    "node": "6.0.0"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "mocha": "^2.5.3"
+  },
+  "dependencies": {
+    "applicationinsights": "^0.15.19",
+    "async": "^2.1.4",
+    "azure-storage": "^0.8.0",
+    "moment": "^2.11.1",
+    "nconf": "^0.8.2",
+    "node-cache": "^4.1.0",
+    "postgres-client": "^1.0.1",
+    "request": "^2.79.0",
+    "twitter": "^1.2.5"
+  }
+}

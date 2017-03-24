@@ -1,0 +1,2 @@
+[config]
+command = bash ./Deploy-AzureWebJob-Kudu.sh

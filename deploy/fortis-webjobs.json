@@ -1,0 +1,102 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "hostingPlanName": { "type": "string" },
+    "webSiteName": { "type": "string" },
+    "dataStorageAccountName": { "type": "string" },
+    "uniqueId": { "type": "string" },
+    "reactAppSiteHost": { "type": "string" },
+    "siteName": { "type": "string" },
+    "preNlpQueueName": { "type": "string" }
+  },
+    "variables": {
+      "applicationInsightName": "[concat('FortisWebJobsAppInsight-', parameters('uniqueId'))]"
+    },
+  "resources": [
+    {
+      "apiVersion": "2015-08-01",
+      "name": "[parameters('webSiteName')]",
+      "type": "Microsoft.Web/sites",
+      "location": "[resourceGroup().location]",
+      "tags": {
+        "[concat('hidden-related:', resourceGroup().id, '/providers/Microsoft.Web/serverfarms/', parameters('hostingPlanName'))]": "Resource",
+        "displayName": "WebJobsWebSite"
+      },
+      "properties": {
+        "name": "[parameters('webSiteName')]",
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('hostingPlanName'))]"
+      },
+      "resources": [
+        {
+          "apiVersion": "2015-08-01",
+          "name": "web",
+          "type": "config",
+          "dependsOn": [
+            "[concat('Microsoft.Web/sites/', parameters('webSiteName'))]"
+          ],
+          "properties": {
+            "use32BitWorkerProcess": false,
+            "alwaysOn": true,
+            "scmType": "LocalGit"
+          }
+        },
+        {
+          "apiVersion": "2015-08-01",
+          "name": "connectionstrings",
+          "type": "config",
+          "dependsOn": [
+            "[concat('Microsoft.Web/sites/', parameters('webSiteName'))]"
+          ],
+          "properties": {
+            "AzureWebJobsDashboard": {
+              "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', parameters('dataStorageAccountName'), ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('dataStorageAccountName')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value)]",
+              "type": "custom"
+            },
+            "AzureWebJobsStorage": {
+              "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', parameters('dataStorageAccountName'), ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('dataStorageAccountName')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value)]",
+              "type": "custom"
+            }
+          }
+        },
+        {
+          "name": "appsettings",
+          "type": "config",
+          "apiVersion": "2015-08-01",
+          "dependsOn": [
+            "[concat('Microsoft.Web/sites/', parameters('webSiteName'))]"
+          ],
+          "tags": {
+            "displayName": "ApplicationSettings"
+          },
+          "properties": {
+            "WEBSITE_NODE_DEFAULT_VERSION": "6.9.1",
+            "AZURE_STORAGE_ACCOUNT": "[parameters('dataStorageAccountName')]",
+            "AZURE_STORAGE_CONNECTION_STRING": "[concat('DefaultEndpointsProtocol=https;AccountName=', parameters('dataStorageAccountName'), ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('dataStorageAccountName')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value)]",
+            "AZURE_STORAGE_KEY": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('dataStorageAccountName')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value]",
+            "PRE_NLP_QUEUE": "[parameters('preNlpQueueName')]",
+            "APPINSIGHTS_INSTRUMENTATIONKEY": "[reference(resourceId('Microsoft.Insights/components', variables('applicationInsightName')), '2014-04-01').InstrumentationKey]",
+            "REACT_APP_SERVICE_HOST": "[parameters('reactAppSiteHost')]",
+            "FORTIS_SITE_NAME": "[parameters('siteName')]"
+          }
+        }
+      ]
+    },
+    {
+      "name": "[variables('applicationInsightName')]",
+      "type": "Microsoft.Insights/components",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2014-04-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/sites', parameters('webSiteName'))]"
+      ],
+      "tags": {
+        "displayName": "Component ApplicationInsight"
+      },
+      "properties": {
+        "applicationId": "[resourceId('Microsoft.Web/sites', parameters('webSiteName'))]"
+      }
+    }
+  ],
+    "outputs": {}
+}

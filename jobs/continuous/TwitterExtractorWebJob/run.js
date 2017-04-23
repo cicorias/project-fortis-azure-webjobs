@@ -77,7 +77,7 @@ function processTweet(tweet, supportedLanguages){
       // we use moment.js to pars the "strange"" Twitter dateTime format
       created_at: iso_8601_created_at,
       id: tweet.id_str || "N/A",
-      user_id: tweet.user ? tweet.user.id : "unknown",
+      user_id: tweet.user ? tweet.user.id_str : "unknown",
       geo: tweet.coordinates,
       originalSources: [tweet.user ? tweet.user.name : "twitter"],
       profileDescription: tweet.user && tweet.user.description ? tweet.user.description : "",

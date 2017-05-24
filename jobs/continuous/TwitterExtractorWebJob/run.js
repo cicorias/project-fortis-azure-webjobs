@@ -59,7 +59,7 @@ function ValidTweet(tweet, supportedLanguages){
 
 function processTweet(tweet, supportedLanguages){
   // Set the correct language code for Indonesia - Some Tweets use the wrong language code (in instead of id)
-  tweet.lang = "in" ? tweet.lang : "id";
+  tweet.lang = tweet.lang != "in" ? tweet.lang : "id";
   if(!ValidTweet(tweet, supportedLanguages)){
     return;
   }
